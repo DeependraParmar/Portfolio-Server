@@ -5,6 +5,7 @@ import requestIp from "request-ip";
 import { ipMiddleware } from "./middleware.js";
 import Request from "./models/Request.js";
 import Like from "./models/Like.js";
+import cors from "cors";
 
 const app = express();
 
@@ -14,24 +15,28 @@ config({
 
 connectDB();
 app.use(requestIp.mw());
-app.use(express.json());
+
+app.use(cors({
+    origin: [process.env.PRIMARY_FRONTEND_URL, process.env.LOCAL_FRONTEND_URL],
+    credentials: false,
+}))
 
 app.get("/add-request", ipMiddleware , async(req, res) => {
     try{
         const { ip } = req;
 
-        const pageVisits = await Request.countDocuments({});
         const doIpExist = await Request.findOne({ ip });
-
+        
         if (!doIpExist) {
             await Request.create({ ip });
         }
         
+        const views = await Request.countDocuments({});
 
         return res.json({
             success: true,
             message: "IP Recorded Successfully",
-            pageVisits
+            views
         })
     }
     catch(error){
@@ -47,7 +52,7 @@ app.get("/like", ipMiddleware, async(req, res) => {
         if (!isLiked) {
             await Like.create({ ip });
         }
-        
+
         const totalLikes = await Like.countDocuments({});
 
         return res.json({
