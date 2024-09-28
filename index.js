@@ -44,6 +44,21 @@ app.get("/add-request", ipMiddleware , async(req, res) => {
     }
 });
 
+app.get("/is-liked", ipMiddleware, async (req, res) => {
+    try {
+        const { ip } = req;
+        const isLiked = await Like.findOne({ ip });
+
+        return res.json({
+            success: true,
+            isLiked: isLiked ? true : false
+        });
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
 app.get("/like", ipMiddleware, async(req, res) => {
     try{
         const { ip } = req;
@@ -79,7 +94,7 @@ app.get("/dislike", ipMiddleware, async(req, res) => {
         
         return res.json({
             success: true,
-            message: "Sad to see you go. 😞",
+            message: "Disliked it. No Problem 😇",
             likes: totalLikes
         })
     }
